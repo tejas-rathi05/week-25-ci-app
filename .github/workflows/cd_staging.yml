@@ -1,0 +1,17 @@
+name: Deploy to Staging
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  redeploy_everything:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Status
+        run: |
+          echo "${{ secrets.SSH_STAGING_PRIVATE_KEY }}" &> ~/ssh_key
+          mkdir -p /home/runner/.ssh
+          touch /home/runner/.ssh/known_hosts
+          echo "${{ secrets.KNOWN_HOSTS }}" $> /home/runner/.ssh/known_hosts
+          chmod 700 /home/runner/ssh_key
+          ssh -i ~/ssh_key dev@20.187.144.155 -t "cd week-25-ci-app/ && git pull origin main && npm install -g pnpm && pnpm install && pnpm run build && pm2 restart all"
